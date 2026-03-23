@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm list:*)",
+      "WebFetch(domain:zustand.docs.pmnd.rs)",
+      "WebSearch",
+      "WebFetch(domain:docs.runanywhere.ai)"
+    ]
+  }
+}

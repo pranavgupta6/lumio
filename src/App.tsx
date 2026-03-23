@@ -1,72 +1,55 @@
-import { useState, useEffect } from 'react';
-import { initSDK, getAccelerationMode } from './runanywhere';
-import { ChatTab } from './components/ChatTab';
-import { VisionTab } from './components/VisionTab';
-import { VoiceTab } from './components/VoiceTab';
-import { ToolsTab } from './components/ToolsTab';
+import { useState, useEffect } from 'react'
+import { ModelLoader } from './components/ModelLoader'
+import { Lumio } from './components/Lumio'
+import { initSDK } from './runanywhere'
 
-type Tab = 'chat' | 'vision' | 'voice' | 'tools';
+function App() {
+  const [isReady, setIsReady] = useState(false)
+  const [sdkInitialized, setSdkInitialized] = useState(false)
 
-export function App() {
-  const [sdkReady, setSdkReady] = useState(false);
-  const [sdkError, setSdkError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<Tab>('chat');
-
+  // Initialize RunAnywhere SDK on mount
   useEffect(() => {
-    initSDK()
-      .then(() => setSdkReady(true))
-      .catch((err) => setSdkError(err instanceof Error ? err.message : String(err)));
-  }, []);
+    const initialize = async () => {
+      try {
+        await initSDK()
+        setSdkInitialized(true)
+      } catch (error) {
+        console.error('SDK initialization failed:', error)
+      }
+    }
 
-  if (sdkError) {
-    return (
-      <div className="app-loading">
-        <h2>SDK Error</h2>
-        <p className="error-text">{sdkError}</p>
-      </div>
-    );
+    initialize()
+  }, [])
+
+  // Handle when models are ready
+  const handleReady = () => {
+    console.log('onReady received — setting isReady to true')
+    setIsReady(true)
   }
 
-  if (!sdkReady) {
+  // Show loading if SDK not initialized yet
+  if (!sdkInitialized) {
     return (
-      <div className="app-loading">
-        <div className="spinner" />
-        <h2>Loading RunAnywhere SDK...</h2>
-        <p>Initializing on-device AI engine</p>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        background: '#1a1a1a',
+        color: 'white'
+      }}>
+        Initializing SDK...
       </div>
-    );
+    )
   }
 
-  const accel = getAccelerationMode();
+  // Show ModelLoader if not ready yet
+  if (!isReady) {
+    return <ModelLoader onReady={handleReady} />
+  }
 
-  return (
-    <div className="app">
-      <header className="app-header">
-        <h1>RunAnywhere AI</h1>
-        {accel && <span className="badge">{accel === 'webgpu' ? 'WebGPU' : 'CPU'}</span>}
-      </header>
-
-      <nav className="tab-bar">
-        <button className={activeTab === 'chat' ? 'active' : ''} onClick={() => setActiveTab('chat')}>
-          💬 Chat
-        </button>
-        <button className={activeTab === 'vision' ? 'active' : ''} onClick={() => setActiveTab('vision')}>
-          📷 Vision
-        </button>
-        <button className={activeTab === 'voice' ? 'active' : ''} onClick={() => setActiveTab('voice')}>
-          🎙️ Voice
-        </button>
-        <button className={activeTab === 'tools' ? 'active' : ''} onClick={() => setActiveTab('tools')}>
-          🔧 Tools
-        </button>
-      </nav>
-
-      <main className="tab-content">
-        {activeTab === 'chat' && <ChatTab />}
-        {activeTab === 'vision' && <VisionTab />}
-        {activeTab === 'voice' && <VoiceTab />}
-        {activeTab === 'tools' && <ToolsTab />}
-      </main>
-    </div>
-  );
+  // Show Lumio main screen when ready
+  return <Lumio />
 }
+
+export default App

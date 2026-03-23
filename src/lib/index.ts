@@ -1,0 +1,1 @@
+export { speakText, unlockAudio } from './tts'
